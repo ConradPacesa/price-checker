@@ -14,6 +14,8 @@ type searchParams struct {
 	DepDate     string
 	RetDate     string
 	Adults      int
+	Children    int
+	Infants     int
 	NonStop     bool
 }
 
@@ -22,7 +24,14 @@ func Search(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, http.StatusText(405), http.StatusMethodNotAllowed)
 	}
-	body, err := ioutil.ReadAll(r.Body)
+	params := getReqParams(r)
+	l := setLink(r, params)
+	resp := sendRequest(l)
+	io.WriteString(w, resp)
+}
+
+func getReqParams(req *http.Request) searchParams {
+	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		fmt.Printf("There was an issue with the JSON, try again %v", err)
 	}
@@ -31,25 +40,37 @@ func Search(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("There was an issue with the JSON, try again %v", err)
 	}
-	defer r.Body.Close()
-
-	l := setLink(r, s)
-	resp := sendRequest(l)
-	io.WriteString(w, resp)
+	return s
 }
 
 func setLink(req *http.Request, p searchParams) string {
 	const apiKey string = "API_KEY"
+	var rdate string
+
+	if p.RetDate != "" {
+		rdate = "return_date"
+	}
 
 	link := fmt.Sprintf("https://api.sandbox.amadeus.com/v1.2/flights/low-fare-search?"+
 		"apikey=%v"+
 		"&origin=%v"+
 		"&destination=%v"+
-		"&departure_date=%v",
+		"&departure_date=%v"+
+		"&%v=%v"+
+		"&adults=%v"+
+		"&children=%v"+
+		"&infants=%v"+
+		"&non_stop=%v",
 		apiKey,
 		p.Origin,
 		p.Destination,
-		p.DepDate)
+		p.DepDate,
+		rdate,
+		p.RetDate,
+		p.Adults,
+		p.Children,
+		p.Infants,
+		p.NonStop)
 	fmt.Printf(link)
 	return link
 }
