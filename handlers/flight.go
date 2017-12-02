@@ -6,6 +6,9 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
+	// Importen this package to pull environment variables from .env
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type searchParams struct {
@@ -44,7 +47,7 @@ func getReqParams(req *http.Request) searchParams {
 }
 
 func setLink(req *http.Request, p searchParams) string {
-	const apiKey string = "API_KEY"
+	apiKey := os.Getenv("API_KEY")
 	var rdate string
 
 	if p.RetDate != "" {
