@@ -63,7 +63,7 @@ func setLink(req *http.Request, p searchParams) string {
 		"&adults=%v"+
 		"&children=%v"+
 		"&infants=%v"+
-		"&non_stop=%v",
+		"&nonstop=%v",
 		apiKey,
 		p.Origin,
 		p.Destination,
